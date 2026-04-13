@@ -12,6 +12,7 @@ import { restartCore } from '../core/manager'
 import { addProfileUpdater, removeProfileUpdater } from '../core/profileUpdater'
 import { mihomoProfileWorkDir, mihomoWorkDir, profileConfigPath, profilePath } from '../utils/dirs'
 import { createLogger } from '../utils/logger'
+import { isSupportedShareLink, parseShareLinkProfile } from '../utils/shareLink'
 import { getAppConfig } from './app'
 import { getControledMihomoConfig } from './controledMihomo'
 
@@ -251,6 +252,18 @@ export async function createProfile(item: Partial<IProfileItem>): Promise<IProfi
     userAgent: item.userAgent,
     updated: new Date().getTime(),
     updateTimeout: item.updateTimeout
+  }
+
+  if (isSupportedShareLink(item.url)) {
+    const { name, content } = parseShareLinkProfile(item.url || '')
+    newItem.type = 'local'
+    newItem.name = item.name || name
+    delete newItem.url
+    delete newItem.authToken
+    delete newItem.userAgent
+    delete newItem.useProxy
+    await setProfileStr(id, content)
+    return newItem
   }
 
   // Local
