@@ -102,6 +102,13 @@ function parseAlpnValues(searchParams: URLSearchParams): string[] | undefined {
 
 function buildProfileContent(proxy: IParsedHy2Proxy): string {
   const groupName = proxy.name.toUpperCase() === 'PROXY' ? 'PROXY-GROUP' : 'PROXY'
+  const rules = [
+    'GEOSITE,private,DIRECT',
+    'GEOIP,LAN,DIRECT,no-resolve',
+    'GEOSITE,cn,DIRECT',
+    'GEOIP,CN,DIRECT,no-resolve',
+    `MATCH,${groupName}`
+  ]
 
   return stringify({
     proxies: [proxy],
@@ -112,7 +119,7 @@ function buildProfileContent(proxy: IParsedHy2Proxy): string {
         proxies: [proxy.name, 'DIRECT']
       }
     ],
-    rules: [`MATCH,${groupName}`]
+    rules
   })
 }
 
