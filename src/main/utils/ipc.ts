@@ -192,14 +192,36 @@ async function getSmartOverrideContent(): Promise<string | null> {
 }
 
 async function fetchIPInfo(url: string): Promise<unknown> {
-  const res = await httpGet<unknown>(url, { timeout: 10000, responseType: 'json' })
+  const config = await getControledMihomoConfig()
+  const mixedPort = config?.['mixed-port']
+  const proxy =
+    typeof mixedPort === 'number' && mixedPort > 0
+      ? {
+          protocol: 'http' as const,
+          host: '127.0.0.1',
+          port: mixedPort
+        }
+      : undefined
+
+  const res = await httpGet<unknown>(url, { timeout: 10000, responseType: 'json', proxy })
   return res.data
 }
 
 async function measureLatency(url: string): Promise<number | null> {
   try {
     const t0 = Date.now()
-    await httpGet<unknown>(url, { timeout: 5000, responseType: 'text' })
+    const config = await getControledMihomoConfig()
+    const mixedPort = config?.['mixed-port']
+    const proxy =
+      typeof mixedPort === 'number' && mixedPort > 0
+        ? {
+            protocol: 'http' as const,
+            host: '127.0.0.1',
+            port: mixedPort
+          }
+        : undefined
+
+    await httpGet<unknown>(url, { timeout: 5000, responseType: 'text', proxy })
     return Date.now() - t0
   } catch {
     return null
